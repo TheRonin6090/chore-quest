@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
-import { buildApp, nightModeAt } from '../src/app.js';
+import { allowedHost, buildApp, nightModeAt } from '../src/app.js';
 import { allBadges, badgeViews, evaluateBadges, pendingCelebrations } from '../src/badges.js';
 import {
   completeChore,
@@ -392,5 +392,49 @@ test('http: undo checks the kid first; unknown kids are rejected', async () => {
     assert.equal((await app.inject({ method: 'POST', url, payload, headers: auth })).statusCode, 404, url);
   }
   assert.equal((await app.inject({ method: 'POST', url: '/api/parent/days-off', payload: { kidId: 0, date: WED }, headers: auth })).statusCode, 200, '0 = every kid');
+  await app.close();
+});
+
+test('host names: IPs and local names only, so DNS rebinding is refused', async () => {
+  for (const h of ['192.168.1.20:8080', '127.0.0.1', '[fe80::1]:8080', 'localhost:8080', 'raspberrypi', 'pi.local', 'chores.home.arpa', 'nas.lan:8080']) {
+    assert.ok(allowedHost(h, []), h);
+  }
+  for (const h of ['evil.example.com', 'rebind.attacker.net:8080', undefined]) assert.ok(!allowedHost(h, []), String(h));
+  assert.ok(allowedHost('chores.example.net', ['chores.example.net']), 'ALLOWED_HOSTS adds names');
+  assert.ok(allowedHost('anything.example.com', ['*']), '"*" turns the check off');
+
+  const app = await buildApp({ db: freshDb(), now: () => at(WED, '12:00'), logger: false, serveStatic: false });
+  const evil = await app.inject({ method: 'GET', url: '/api/state', headers: { host: 'evil.example.com' } });
+  assert.equal(evil.statusCode, 421);
+  const ok = await app.inject({ method: 'GET', url: '/api/state', headers: { host: '192.168.1.20:8080' } });
+  assert.equal(ok.statusCode, 200);
+  assert.equal(ok.headers['x-frame-options'], 'DENY');
+  assert.equal(ok.headers['x-content-type-options'], 'nosniff');
+  const form = await app.inject({ method: 'POST', url: '/api/login', payload: 'pin=0000', headers: { 'content-type': 'text/plain' } });
+  assert.equal(form.statusCode, 415, 'only JSON bodies');
+  await app.close();
+});
+
+test('http: parent lockout doubles; kid lockout stays at 30 s', async () => {
+  const db = freshDb();
+  let clock = at(WED, '12:00');
+  const app = await buildApp({ db, now: () => clock, logger: false, serveStatic: false });
+  const login = (body: object) => app.inject({ method: 'POST', url: '/api/login', payload: body });
+  const fiveWrong = async (body: object) => {
+    for (let i = 0; i < 5; i++) await login(body);
+  };
+  await fiveWrong({ role: 'parent', pin: '9999' });
+  clock += 31_000;
+  await fiveWrong({ role: 'parent', pin: '9999' }); // second lockout: 60 s
+  clock += 31_000;
+  assert.equal((await login({ role: 'parent', pin: '0000' })).statusCode, 429, 'still locked after 31 s');
+  clock += 30_000;
+  assert.equal((await login({ role: 'parent', pin: '0000' })).statusCode, 200);
+
+  await fiveWrong({ kidId: KID_A, pin: '9999' });
+  clock += 31_000;
+  await fiveWrong({ kidId: KID_A, pin: '9999' });
+  clock += 31_000;
+  assert.equal((await login({ kidId: KID_A, pin: '1111' })).statusCode, 200, 'kids never wait more than 30 s');
   await app.close();
 });

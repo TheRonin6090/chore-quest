@@ -8,9 +8,16 @@ services:
     environment:
       LOG_LEVEL: info
       # APP_TIME_ZONE: America/New_York   # overrides timeZone in household.json
+      # ALLOWED_HOSTS: chores.example.net  # only if you reach it by a non-local host name
       # BACKUP_DIR: /backups        # optional: put nightly backups on a separate mount
       # BACKUP_KEEP_DAYS: "30"
     volumes:
       # The database, nightly backups and your household.json live here. Must be writable by
       # uid 1000 (the container's `node` user): `mkdir -p data && sudo chown 1000:1000 data`.
       - ./data:/data
+    # Keep Docker's log files small (by default they grow forever, which wears out SD cards).
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "3"

@@ -62,6 +62,23 @@ function dateParam(v: unknown, name = 'date'): string {
   return v;
 }
 
+const LOCAL_SUFFIXES = ['.local', '.lan', '.home', '.home.arpa', '.internal', '.localdomain'];
+
+/**
+ * Whether a Host header names this server on the home network. Answering only IP addresses and
+ * local names stops DNS rebinding: a web page on some public domain pointing that domain at the
+ * server's LAN address and then talking to the app through a browser inside the house.
+ */
+export function allowedHost(host: string | undefined, extra: string[] = config.allowedHosts): boolean {
+  if (!host) return false;
+  if (extra.includes('*')) return true;
+  const h = host.toLowerCase();
+  const name = h.startsWith('[') ? h.slice(1, h.indexOf(']')) : h.replace(/:\d+$/, '');
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(name) || name.includes(':')) return true; // IPv4 or IPv6 literal
+  if (name === 'localhost' || !name.includes('.')) return true;
+  return LOCAL_SUFFIXES.some((s) => name.endsWith(s)) || extra.includes(name);
+}
+
 export function nightModeAt(minutes: number, s: Settings): boolean {
   if (s.nightStart === s.nightEnd) return false;
   return s.nightStart < s.nightEnd ? minutes >= s.nightStart && minutes < s.nightEnd : minutes >= s.nightStart || minutes < s.nightEnd;
@@ -70,8 +87,33 @@ export function nightModeAt(minutes: number, s: Settings): boolean {
 export async function buildApp(opts: AppOptions): Promise<FastifyInstance> {
   const { db } = opts;
   const now = opts.now ?? (() => Date.now());
-  const app = Fastify({ logger: opts.logger ?? { level: config.logLevel }, bodyLimit: 1024 * 1024 });
+  // Fastify's per-request logs would add two lines every 15 s per kiosk poll; changes and errors are logged below.
+  const app = Fastify({ logger: opts.logger ?? { level: config.logLevel }, bodyLimit: 1024 * 1024, disableRequestLogging: true });
   await app.register(fastifyCookie);
+  // Bodies are JSON only, so a form on another site can't post to the API.
+  app.removeContentTypeParser('text/plain');
+
+  app.addHook('onRequest', async (req, reply) => {
+    if (!allowedHost(req.headers.host)) {
+      req.log.warn({ host: req.headers.host, url: req.url }, 'blocked request for an unknown host name');
+      return reply
+        .code(421)
+        .type('text/plain')
+        .send('Chore Quest answers only to IP addresses and local host names. To use another name, add it to ALLOWED_HOSTS.');
+    }
+  });
+
+  app.addHook('onSend', async (_req, reply) => {
+    reply.header('X-Content-Type-Options', 'nosniff');
+    reply.header('X-Frame-Options', 'DENY');
+    reply.header('Referrer-Policy', 'no-referrer');
+  });
+
+  app.addHook('onResponse', async (req, reply) => {
+    if (req.method === 'GET' && reply.statusCode < 400) return;
+    if (req.url === '/api/client-log') return; // already logged by its handler
+    req.log.info({ method: req.method, url: req.url, status: reply.statusCode, ms: Math.round(reply.elapsedTime) }, 'request');
+  });
 
   app.decorateRequest('session', null);
   // Only API calls use the session; skipping static files avoids a database write per asset.

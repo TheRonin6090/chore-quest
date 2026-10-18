@@ -9,3 +9,10 @@ data/
 household.json
 local/
 CLAUDE.local.md
+
+# Editor and OS files.
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp

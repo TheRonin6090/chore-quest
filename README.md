@@ -64,6 +64,18 @@ On first start, the server reads `household.json` from the data folder to set up
 
 **Kids and chores are copied in only when the database is first created.** After that you change them in Parent Mode: chores, values, schedules, kids' names, PINs, themes and avatars. Chore badges and the time zone are read at every start, so changing those needs only a restart (`docker compose restart`). If the file has a mistake, the server won't start, and the log names the field. To start over with an edited file, see *Start over* below.
 
+### Names you can use
+
+- **Themes:** `quest` (Hero's Quest), `sparkle` (Sweet Sparkle), `space` (Space Explorer), `ocean` (Ocean Friends), `dino` (Dino Jungle).
+- **Avatars:** any of these work with any theme.
+  - Quest: `knight`, `ranger`, `wizard`, `archer`, `royal`, `dragon`
+  - Sparkle: `bunny`, `kitten`, `unicorn`, `puppy`, `panda`, `fairy`
+  - Space: `astronaut`, `alien`, `robot`, `starcat`
+  - Ocean: `mermaid`, `octopus`, `dolphin`, `turtle`
+  - Dino: `trex`, `triceratops`, `explorer`, `pterodactyl`
+- **Chore icons:** `toys` `shirt` `drawer` `table` `sofa` `backpack` `shower` `shampoo` `tooth` `bowl` `plate` `dog` `cat` `pill` `cupboard` `dishwasher` `coffee` `pajamas` `plant` `car` `broom` `trash` `book` `bed` `star` `heart` `fish` `leaf` `rocket`. An unknown name shows a star.
+- **Badge glyphs:** any chore icon, or `medal` `trophy` `crown` `sun` `sunrise` `moon` `calendar` `gem` `coin` `coins` `chest` `flame` `snowflake` `planet` `shell` `bubble` `egg` `footprint`.
+
 ## What's where
 
 | URL | Who | What |
@@ -73,7 +85,9 @@ On first start, the server reads `household.json` from the data folder to set up
 | `http://<server>:8080/#/check` | iPad | Device diagnostics (features, sound, animation smoothness). |
 | `http://<server>:8080/healthz` | Monitoring | `{"ok":true}` |
 
-PINs stop accidental or sibling taps; they aren't real security. Keep the app on your home network. Don't expose it to the internet.
+## Security
+
+Chore Quest is made for one home network, and nothing in it talks to the internet. **Don't port-forward it or put it on the internet**: its PINs stop sibling taps, not attackers. To check on it from outside the house, use a VPN into your network (WireGuard, Tailscale and the like). [SECURITY.md](SECURITY.md) has the details: what's protected, what's stored, and how to report a problem.
 
 ## Layout
 
@@ -133,6 +147,7 @@ Logs go to `data/server.log`. To update: `git pull && npm ci && npm run build &&
 | `DATA_DIR` | `./data` (`/data` in Docker) | SQLite database, backups, `household.json` |
 | `HOUSEHOLD_FILE` | `$DATA_DIR/household.json` | Household setup (falls back to `household.example.json`) |
 | `APP_TIME_ZONE` | `timeZone` from the household file, else `UTC` | All day boundaries and windows |
+| `ALLOWED_HOSTS` | (none) | Extra host names to answer to, comma-separated. IP addresses and local names (`localhost`, no dot, `.local`, `.lan`, `.home.arpa` …) always work. `*` turns the check off. |
 | `BACKUP_DIR` | `$DATA_DIR/backups` | Nightly backup folder |
 | `BACKUP_KEEP_DAYS` | `30` | Backups older than this are deleted |
 | `LOG_LEVEL` | `info` | Pino log level (logs are JSON on stdout) |
@@ -164,6 +179,20 @@ Chore instances aren't stored: each day's list is generated from the chore templ
 - awards badges
 
 It's idempotent, so if the server was off at midnight it catches up when it comes back.
+
+## Troubleshooting
+
+| Problem | Fix |
+|---|---|
+| The container keeps restarting | Run `docker compose logs --tail 30`. A mistake in `household.json` is reported with the field name, e.g. `kids[0].pin must be 4 digits`. |
+| `EACCES` / permission denied on `/data` | The data folder must belong to uid 1000: `sudo chown -R 1000:1000 data`. |
+| "Chore Quest answers only to IP addresses and local host names" | You opened it by a host name with a dot in it. Use the IP address, or add the name to `ALLOWED_HOSTS`. |
+| Days end at the wrong time | Set `timeZone` in `household.json` (or `APP_TIME_ZONE`) and restart. The log line `household loaded` shows the zone in use. |
+| iPad problems | See the troubleshooting table in [IPAD_SETUP.md](IPAD_SETUP.md). |
+
+## Contributing
+
+Issues and pull requests are welcome. Run `npm run lint && npm run typecheck && npm test && npm run build` before sending a change; CI runs the same checks. The hard rules: everything must run on Safari 12 (see [CHANGING_THINGS.md](CHANGING_THINGS.md)), nothing may load from the internet, and all art and sounds must be original.
 
 ## License
 

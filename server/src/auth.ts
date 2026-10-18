@@ -11,6 +11,8 @@ export const SESSION_COOKIE = 'cq_session';
 const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
 const MAX_TRIES = 5;
 const LOCKOUT_MS = 30 * 1000;
+/** The parent lockout doubles each time (30 s, 1 min, 2 min … 15 min) so the PIN can't be ground through. */
+const PARENT_MAX_LOCKOUT_MS = 15 * 60 * 1000;
 
 export interface Session {
   token: string;
@@ -30,21 +32,24 @@ export function validatePin(pin: unknown, role: 'kid' | 'parent'): string {
   return s;
 }
 
-const failures = new Map<string, { count: number; lockedUntil: number }>();
+const failures = new Map<string, { count: number; lockedUntil: number; lockouts: number }>();
 
 function checkLock(subject: string, now: number) {
   const f = failures.get(subject);
   if (f && f.lockedUntil > now) {
-    throw new HttpError(429, 'locked', `Too many tries. Wait ${Math.ceil((f.lockedUntil - now) / 1000)} seconds.`);
+    const s = Math.ceil((f.lockedUntil - now) / 1000);
+    throw new HttpError(429, 'locked', s > 90 ? `Too many tries. Wait ${Math.ceil(s / 60)} minutes.` : `Too many tries. Wait ${s} seconds.`);
   }
 }
 
 function recordFailure(subject: string, now: number) {
-  const f = failures.get(subject) ?? { count: 0, lockedUntil: 0 };
+  const f = failures.get(subject) ?? { count: 0, lockedUntil: 0, lockouts: 0 };
   f.count++;
   if (f.count >= MAX_TRIES) {
     f.count = 0;
-    f.lockedUntil = now + LOCKOUT_MS;
+    // Kids always wait 30 s, so a sibling can't lock them out for long.
+    f.lockedUntil = now + (subject === 'parent' ? Math.min(LOCKOUT_MS * 2 ** f.lockouts, PARENT_MAX_LOCKOUT_MS) : LOCKOUT_MS);
+    f.lockouts++;
   }
   failures.set(subject, f);
 }

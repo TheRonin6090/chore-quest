@@ -15,6 +15,15 @@ export const config = {
   timeZone: process.env.APP_TIME_ZONE ?? 'UTC',
   /** Defaults to $DATA_DIR/household.json, then household.example.json (see household.ts). */
   householdFile: process.env.HOUSEHOLD_FILE ?? '',
+  /**
+   * Extra host names the app answers to, comma-separated (e.g. "chores.example.net"); "*" turns
+   * the check off. IP addresses, localhost and local names (no dot, .local, .lan, .home.arpa …)
+   * are always allowed. See allowedHost() in app.ts.
+   */
+  allowedHosts: (process.env.ALLOWED_HOSTS ?? '')
+    .split(',')
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean),
   /** Set to "true" when serving over HTTPS so the parent cookie is marked Secure. */
   secureCookies: process.env.SECURE_COOKIES === 'true',
 };

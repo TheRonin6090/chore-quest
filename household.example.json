@@ -18,6 +18,33 @@
   ],
   "chores": [
     {
+      "key": "set-the-table",
+      "name": "Set the table",
+      "icon": "table",
+      "windows": [
+        "evening"
+      ],
+      "valueCents": 30,
+      "steps": [
+        "Plates",
+        "Forks and spoons",
+        "Cups",
+        "Napkins"
+      ]
+    },
+    {
+      "key": "water-plants",
+      "name": "Water the plants",
+      "icon": "plant",
+      "days": [
+        "sat",
+        "sun"
+      ],
+      "valueCents": 50,
+      "type": "bonus",
+      "assignMode": "either"
+    },
+    {
       "key": "pick-up-room",
       "name": "Pick up room",
       "icon": "toys",

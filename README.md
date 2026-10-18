@@ -33,7 +33,7 @@ The container restarts by itself, including after a reboot. Building on a Raspbe
 
 ## Your household: `household.json`
 
-On first start, the server reads `household.json` from the data folder to set up the database. If there isn't one, it uses [`household.example.json`](household.example.json): two kids called Alex and Sam with a typical set of chores.
+On first start, the server reads `household.json` from the data folder to set up the database. If there isn't one, it uses [`household.example.json`](household.example.json): two kids called Alex and Sam with a typical set of chores. Its first two chores are worked examples. *Set the table* is a checklist with four steps and its own value. *Water the plants* has no steps (one **Done!** button), runs on weekends only, and is a bonus chore that whoever does it first gets.
 
 ```json
 {
@@ -164,3 +164,7 @@ Chore instances aren't stored: each day's list is generated from the chore templ
 - awards badges
 
 It's idempotent, so if the server was off at midnight it catches up when it comes back.
+
+## License
+
+[MIT](LICENSE). Use it, change it and share it, for your own family or anyone else's.

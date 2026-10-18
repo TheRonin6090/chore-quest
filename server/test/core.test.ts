@@ -81,8 +81,12 @@ test('seed: chores, kids, all required and each', () => {
   const db = freshDb();
   assert.equal(isEmpty(db), false);
   const chores = listChores(db);
-  assert.equal(chores.length, 19);
-  assert.ok(chores.every((c) => c.type === 'required' && c.assignMode === 'each' && c.valueCents === 25));
+  assert.equal(chores.length, 21);
+  // The two example chores at the top of the file show the options; the rest use the defaults.
+  const [table, plants, ...rest] = chores;
+  assert.deepEqual([table.key, table.steps.length, table.valueCents], ['set-the-table', 4, 30]);
+  assert.deepEqual([plants.key, plants.type, plants.assignMode, plants.days], ['water-plants', 'bonus', 'either', [0, 6]]);
+  assert.ok(rest.every((c) => c.type === 'required' && c.assignMode === 'each' && c.valueCents === 25));
   assert.equal(getSettings(db).parentPinMustChange, true);
 });
 
@@ -301,7 +305,7 @@ test('http: login, lockout, access control, forced parent PIN change', async () 
   assert.ok(kidBToday.day.items.some((i: { name: string; group: string }) => i.name === 'Water plants' && i.group === 'bonus'));
 
   const exp = (await get('/api/parent/export/export.json', p.token)).json();
-  assert.equal(exp.tables.chores.length, 20);
+  assert.equal(exp.tables.chores.length, 22);
   assert.equal((await get('/api/parent/export/completions.csv', p.token)).statusCode, 200);
   assert.equal((await get('/api/parent/charts', p.token)).statusCode, 200);
   assert.equal((await get(`/api/parent/summary?kidId=${KID_A}`, p.token)).statusCode, 200);
@@ -364,8 +368,8 @@ test('import rejects a damaged file and changes nothing', () => {
   const data = exportJson(db, at(WED, '10:00'));
   (data.tables.chores[0] as Record<string, unknown>).steps = 'not json';
   assert.throws(() => importJson(db, data), /nothing was changed/);
-  assert.equal(listChores(db).length, 19);
-  assert.equal(importJson(db, exportJson(db, at(WED, '10:00'))).chores, 19, 'a good file still imports');
+  assert.equal(listChores(db).length, 21);
+  assert.equal(importJson(db, exportJson(db, at(WED, '10:00'))).chores, 21, 'a good file still imports');
 });
 
 test('http: undo checks the kid first; unknown kids are rejected', async () => {

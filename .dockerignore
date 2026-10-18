@@ -1,0 +1,10 @@
+node_modules
+**/node_modules
+**/dist
+web/public/icons
+data
+local
+CLAUDE.local.md
+household.json
+.env
+.git

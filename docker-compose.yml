@@ -1,0 +1,16 @@
+services:
+  chore-quest:
+    image: chore-quest:latest
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      LOG_LEVEL: info
+      # APP_TIME_ZONE: America/New_York   # overrides timeZone in household.json
+      # BACKUP_DIR: /backups        # optional: put nightly backups on a separate mount
+      # BACKUP_KEEP_DAYS: "30"
+    volumes:
+      # The database, nightly backups and your household.json live here. Must be writable by
+      # uid 1000 (the container's `node` user): `mkdir -p data && sudo chown 1000:1000 data`.
+      - ./data:/data

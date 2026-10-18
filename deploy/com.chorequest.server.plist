@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  macOS alternative to Docker (Docker under Colima doesn't start at boot, so it isn't reliable there).
+  Edit the paths and UserName below, then see README.md → "macOS without Docker".
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.chorequest.server</string>
+  <key>UserName</key>
+  <string>CHANGE_ME</string>
+  <key>WorkingDirectory</key>
+  <string>/Users/CHANGE_ME/chore-quest</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/opt/homebrew/bin/node</string>
+    <string>server/dist/index.js</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>NODE_ENV</key>
+    <string>production</string>
+    <key>PORT</key>
+    <string>8080</string>
+    <key>DATA_DIR</key>
+    <string>/Users/CHANGE_ME/chore-quest/data</string>
+  </dict>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>/Users/CHANGE_ME/chore-quest/data/server.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/CHANGE_ME/chore-quest/data/server.log</string>
+</dict>
+</plist>

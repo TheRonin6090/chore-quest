@@ -1,0 +1,229 @@
+{
+  "timeZone": "America/New_York",
+  "parentPin": "0000",
+  "defaultChoreCents": 25,
+  "kids": [
+    {
+      "name": "Alex",
+      "pin": "1111",
+      "theme": "quest",
+      "avatar": "knight"
+    },
+    {
+      "name": "Sam",
+      "pin": "2222",
+      "theme": "sparkle",
+      "avatar": "bunny"
+    }
+  ],
+  "chores": [
+    {
+      "key": "pick-up-room",
+      "name": "Pick up room",
+      "icon": "toys",
+      "steps": [
+        "Toys away",
+        "Clothes in hamper",
+        "Floor clear"
+      ]
+    },
+    {
+      "key": "fold-laundry",
+      "name": "Fold laundry",
+      "icon": "shirt"
+    },
+    {
+      "key": "put-away-laundry",
+      "name": "Put away laundry",
+      "icon": "drawer"
+    },
+    {
+      "key": "clean-dining-table",
+      "name": "Clean dining table",
+      "icon": "table",
+      "steps": [
+        "Clear dishes",
+        "Wipe table"
+      ]
+    },
+    {
+      "key": "clean-kitchen-table",
+      "name": "Clean kitchen table",
+      "icon": "table",
+      "steps": [
+        "Clear dishes",
+        "Wipe table"
+      ]
+    },
+    {
+      "key": "clean-living-room-table",
+      "name": "Clean living room table",
+      "icon": "sofa",
+      "steps": [
+        "Clear items",
+        "Wipe table"
+      ]
+    },
+    {
+      "key": "clean-up-backpack",
+      "name": "Clean up backpack",
+      "icon": "backpack",
+      "windows": [
+        "afternoon"
+      ],
+      "steps": [
+        "Lunchbox to kitchen",
+        "Papers to parent",
+        "Backpack on hook"
+      ]
+    },
+    {
+      "key": "shower-body",
+      "name": "Shower – body",
+      "icon": "shower",
+      "windows": [
+        "evening"
+      ],
+      "days": [
+        "sun",
+        "wed",
+        "fri"
+      ]
+    },
+    {
+      "key": "shower-hair",
+      "name": "Shower – hair",
+      "icon": "shampoo",
+      "windows": [
+        "evening"
+      ],
+      "days": [
+        "sun",
+        "wed",
+        "fri"
+      ],
+      "steps": [
+        "Shampoo",
+        "Rinse",
+        "Conditioner",
+        "Rinse"
+      ]
+    },
+    {
+      "key": "brush-teeth",
+      "name": "Brush teeth",
+      "icon": "tooth",
+      "windows": [
+        "morning",
+        "evening"
+      ]
+    },
+    {
+      "key": "prepare-breakfast",
+      "name": "Prepare breakfast",
+      "icon": "bowl",
+      "windows": [
+        "morning"
+      ]
+    },
+    {
+      "key": "clean-dishes",
+      "name": "Clean dishes after eating",
+      "icon": "plate",
+      "steps": [
+        "Scrape plate",
+        "Rinse",
+        "Into sink/dishwasher"
+      ]
+    },
+    {
+      "key": "feed-pet",
+      "name": "Feed the pet",
+      "icon": "dog",
+      "windows": [
+        "morning",
+        "evening"
+      ]
+    },
+    {
+      "key": "vitamins",
+      "name": "Vitamins",
+      "icon": "pill",
+      "windows": [
+        "evening"
+      ]
+    },
+    {
+      "key": "backpack-ready",
+      "name": "Backpack ready for school",
+      "icon": "backpack",
+      "windows": [
+        "morning"
+      ],
+      "days": [
+        "mon",
+        "tue",
+        "wed",
+        "thu",
+        "fri"
+      ],
+      "steps": [
+        "Homework in",
+        "Water bottle",
+        "Lunch"
+      ]
+    },
+    {
+      "key": "unload-dishes",
+      "name": "Unload dishes",
+      "icon": "cupboard"
+    },
+    {
+      "key": "load-dishes",
+      "name": "Load dishes",
+      "icon": "dishwasher"
+    },
+    {
+      "key": "make-bed",
+      "name": "Make bed",
+      "icon": "bed",
+      "windows": [
+        "morning"
+      ]
+    },
+    {
+      "key": "pjs",
+      "name": "PJs for bedtime",
+      "icon": "pajamas",
+      "windows": [
+        "evening"
+      ]
+    }
+  ],
+  "choreBadges": [
+    {
+      "id": "sparkle-smile",
+      "name": "Sparkle Smile",
+      "hint": "Brush your teeth 60 times.",
+      "glyph": "tooth",
+      "choreKey": "brush-teeth",
+      "count": 60
+    },
+    {
+      "id": "pet-pal",
+      "name": "Pet Pal",
+      "hint": "Feed the pet 30 times.",
+      "glyph": "dog",
+      "choreKey": "feed-pet",
+      "count": 30
+    },
+    {
+      "id": "bed-boss",
+      "name": "Bed Boss",
+      "hint": "Make your bed 20 times.",
+      "glyph": "bed",
+      "choreKey": "make-bed",
+      "count": 20
+    }
+  ]
+}

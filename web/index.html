@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Chore Quest" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#1f3b2d" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon-180.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-touch-icon-152.png" />
+    <link rel="icon" type="image/png" href="/icons/favicon-32.png" />
+    <title>Chore Quest</title>
+    <!--
+      Plain ES5 on purpose: this must run even if the main bundle fails to parse on Safari 12,
+      so syntax errors in the bundle still reach the server log.
+    -->
+    <script>
+      (function () {
+        var sent = 0;
+        function send(level, kind, message, data) {
+          if (sent++ > 50) return;
+          try {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api/client-log', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({ level: level, kind: kind, message: String(message), data: data }));
+          } catch (e) {}
+        }
+        window.__cqLog = send;
+        window.onerror = function (message, source, line, col, err) {
+          send('error', 'onerror', message, { source: source, line: line, col: col, stack: err && err.stack });
+        };
+        window.addEventListener('unhandledrejection', function (e) {
+          var r = e.reason;
+          send('error', 'unhandledrejection', (r && r.message) || r, { stack: r && r.stack });
+        });
+        setTimeout(function () {
+          if (window.__cqBooted) return;
+          send('error', 'boot-timeout', 'App did not boot within 8 s');
+          var el = document.getElementById('boot-fail');
+          if (el) el.style.display = 'block';
+        }, 8000);
+      })();
+    </script>
+    <script nomodule>
+      window.__cqLog('error', 'nomodule', 'Browser does not support ES modules');
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="boot-fail" style="display: none; padding: 40px; font: 24px -apple-system, sans-serif; color: #fff; background: #7a1f1f">
+      Chore Quest failed to start. The error was sent to the server log.
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

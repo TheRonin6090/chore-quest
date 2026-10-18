@@ -1,0 +1,33 @@
+{
+  "name": "chore-quest",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "server",
+    "web"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "build": "npm run build -w web && npm run build -w server",
+    "start": "node server/dist/index.js",
+    "dev:server": "npm run dev -w server",
+    "dev:web": "npm run dev -w web",
+    "lint": "eslint . && stylelint \"web/src/**/*.css\"",
+    "typecheck": "tsc -p server --noEmit && tsc -p web --noEmit",
+    "test": "npm test -w server",
+    "seed": "node server/dist/seed-cli.js"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.13.0",
+    "eslint-plugin-compat": "7.0.2",
+    "globals": "17.13.0",
+    "stylelint": "17.16.0",
+    "stylelint-config-standard": "40.0.0",
+    "stylelint-no-unsupported-browser-features": "8.1.2",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.2"
+  }
+}

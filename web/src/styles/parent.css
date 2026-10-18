@@ -1,0 +1,568 @@
+/* Parent Mode: responsive for phone, desktop and the iPad. */
+
+.parent {
+  min-height: 100vh;
+  background: #f4efe6;
+  color: var(--ink);
+  font-size: 17px;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.standalone .parent {
+  padding-top: 20px;
+}
+
+.parent-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: #1f3b2d;
+  color: #f6ecd2;
+}
+
+.parent-title {
+  font-weight: 800;
+  font-size: 19px;
+}
+
+.parent-tabs {
+  display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: #2f5a43;
+  padding: 0 8px;
+}
+
+.ptab {
+  flex-shrink: 0;
+  min-height: 48px;
+  padding: 0 16px;
+  border: 0;
+  border-bottom: 4px solid transparent;
+  background: transparent;
+  color: #d8e8dd;
+  font-weight: 700;
+}
+
+.ptab-on {
+  color: #fff;
+  border-bottom-color: var(--gold);
+}
+
+.parent-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.parent-kiosk {
+  font-size: 19px;
+}
+
+.parent-kiosk .ptab {
+  min-height: 64px;
+}
+
+/* ---- cards and lists ---- */
+
+.pcard {
+  margin-bottom: 16px;
+  padding: 16px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.pcard-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.pcard h2 {
+  margin: 0;
+  font-size: 21px;
+}
+
+.pcard h3 {
+  font-size: 16px;
+  margin: 18px 0 6px;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.today-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 16px;
+}
+
+.today-summary span {
+  display: inline-block;
+  margin: 0 16px 6px 0;
+}
+
+.plist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.plist li {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee7da;
+}
+
+.plist li > svg {
+  flex-shrink: 0;
+  margin-right: 10px;
+}
+
+.plist li.archived {
+  opacity: 0.55;
+}
+
+.plist-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.plist a {
+  color: #2f6b4a;
+  font-weight: 700;
+}
+
+.pmuted {
+  color: var(--ink-dim);
+  font-size: 0.9em;
+}
+
+.pwarn {
+  color: #b8582e;
+}
+
+.phint {
+  color: var(--ink-dim);
+  font-size: 15px;
+}
+
+.perror {
+  margin: 10px 0;
+  color: var(--bad);
+  font-weight: 700;
+}
+
+.pflash {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #fff3c4;
+  font-weight: 600;
+}
+
+.ptag {
+  margin: 0 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: #eee7da;
+}
+
+.ptag-now,
+.ptag-required {
+  background: #d5f0df;
+}
+
+.ptag-earlier {
+  background: #ffe2d6;
+}
+
+.ptag-bonus {
+  background: #e6dcff;
+}
+
+/* ---- buttons and forms ---- */
+
+.pbtn {
+  min-height: 44px;
+  margin: 2px 4px 2px 0;
+  padding: 0 16px;
+  border: 1px solid #2f5a43;
+  border-radius: 10px;
+  background: #2f5a43;
+  color: #fff;
+  font-weight: 700;
+}
+
+.pbtn-primary {
+  background: #e2b546;
+  border-color: #c99a2e;
+  color: var(--ink);
+}
+
+.pbtn-ghost {
+  background: transparent;
+  color: inherit;
+  border-color: rgba(0, 0, 0, 0.25);
+}
+
+.parent-bar .pbtn-ghost {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.pbtn-small {
+  min-height: 36px;
+  padding: 0 10px;
+  font-size: 15px;
+}
+
+.parent-kiosk .pbtn-small {
+  min-height: 48px;
+  padding: 0 14px;
+}
+
+.pactions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.pactions > * {
+  margin-right: 8px;
+  margin-bottom: 6px;
+}
+
+.prow-actions {
+  white-space: nowrap;
+}
+
+.pform label,
+.login-card label {
+  display: block;
+  margin-bottom: 14px;
+  font-weight: 700;
+}
+
+.pform input,
+.pform textarea,
+.login-card input,
+.prow input,
+.prow select,
+.pfilters input,
+.pfilters select,
+.bonus-form input {
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 1px solid #cfc6b5;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 400;
+  background: #fff;
+}
+
+.pform label input,
+.pform label textarea,
+.login-card input {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.pfield {
+  margin-bottom: 14px;
+}
+
+.plabel {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.chip {
+  min-height: 40px;
+  margin: 0 6px 6px 0;
+  padding: 0 14px;
+  border: 1px solid #cfc6b5;
+  border-radius: 999px;
+  background: #fff;
+  font-weight: 600;
+}
+
+.parent-kiosk .chip {
+  min-height: 52px;
+}
+
+.chip-on {
+  background: #2f5a43;
+  border-color: #2f5a43;
+  color: #fff;
+}
+
+.pcheck {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 600;
+}
+
+.pcheck input {
+  width: 22px;
+  height: 22px;
+  margin-right: 6px;
+}
+
+.prow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.prow > * {
+  margin-right: 8px;
+  margin-bottom: 4px;
+}
+
+.prow-label {
+  min-width: 140px;
+  font-weight: 700;
+}
+
+.icon-picker,
+.avatar-picker {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.icon-choice,
+.avatar-choice {
+  margin: 0 6px 6px 0;
+  padding: 4px;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  background: #f4efe6;
+}
+
+.icon-choice-on,
+.avatar-choice-on {
+  border-color: #2f5a43;
+  background: #d5f0df;
+}
+
+.bonus-form {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+
+.bonus-form > * {
+  margin: 0 6px 6px 0;
+}
+
+.bonus-form input:first-child {
+  width: 80px;
+}
+
+.bonus-form input:nth-child(2) {
+  flex: 1;
+  min-width: 160px;
+}
+
+.pfilters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.pfilters > * {
+  margin: 0 8px 8px 0;
+}
+
+.login-card {
+  max-width: 360px;
+  margin: 60px auto;
+  padding: 24px;
+  border-radius: 16px;
+  background: #fff;
+  text-align: center;
+}
+
+.login-card h1 {
+  margin: 8px 0 20px;
+}
+
+.login-card .pbtn {
+  width: 100%;
+  margin-top: 6px;
+}
+
+/* ---- tables ---- */
+
+.ptable-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ptable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ptable th,
+.ptable td {
+  padding: 8px 6px;
+  border-bottom: 1px solid #eee7da;
+  text-align: left;
+  vertical-align: top;
+}
+
+.ptable th {
+  font-size: 14px;
+  color: var(--ink-dim);
+}
+
+.ptable a {
+  color: #2f6b4a;
+  font-weight: 700;
+}
+
+.row-undone td {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.money-big {
+  font-size: 34px;
+  font-weight: 800;
+}
+
+/* ---- charts ---- */
+
+.chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.chart-grid {
+  stroke: #eee7da;
+}
+
+.chart-axis {
+  font-size: 12px;
+  fill: var(--ink-dim);
+}
+
+.legend span {
+  display: inline-block;
+  margin-right: 14px;
+  font-weight: 600;
+}
+
+.legend i {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 4px;
+  border-radius: 3px;
+}
+
+.rate-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.rate-name {
+  width: 200px;
+  flex-shrink: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.rate-bar {
+  flex: 1;
+  height: 14px;
+  margin: 0 8px;
+}
+
+.rate-pct {
+  width: 44px;
+  text-align: right;
+  font-weight: 700;
+}
+
+/* ---- weekly summary ---- */
+
+.summary-title {
+  margin: 0 0 12px;
+  font-size: 26px;
+}
+
+.summary-totals {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 12px;
+}
+
+.summary-badge {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 12px 8px 0;
+  font-weight: 700;
+}
+
+.summary-badge svg {
+  margin-right: 4px;
+}
+
+.summary-chores {
+  font-size: 15px;
+}
+
+/* ---- phone ---- */
+
+@media (max-width: 720px) {
+  .today-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .prow-label {
+    min-width: 100%;
+  }
+
+  .rate-name {
+    width: 120px;
+  }
+
+  .plist li {
+    flex-wrap: wrap;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none;
+  }
+
+  .parent,
+  .pcard {
+    background: #fff;
+    box-shadow: none;
+  }
+}

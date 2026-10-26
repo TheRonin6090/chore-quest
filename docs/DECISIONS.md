@@ -49,3 +49,7 @@ Why Chore Quest works the way it does. Most of these were settled before it was 
 - **Device diagnostics stay in the app** at `#/check`.
 - **Editing a chore's windows** moves today's completions (and ticked steps) to a window it still has, so a chore done this morning isn't asked for again tonight. Past days aren't rewritten.
 - **Pre-import backups are timestamped** and pruned like nightly ones, so importing twice in a day can't overwrite the first backup.
+- **Super Bonus** (team challenge with a time limit): one runs at a time. Each kid picked as a helper earns the full reward, written as a parent bonus (linked by `super_bonus_id`), so it shows in weekly totals, the ledger and the summary, and isn't limited by the weekly cap. Finishing is allowed for one minute after the countdown hits zero. When time runs out it just disappears from the iPad, with no message. A parent can undo a finished one (unless that week is paid); badges stay.
+- **Anyone at the iPad can say who helped**, without a PIN, like ticking a chore. The parent sees who was credited and can undo.
+- **The iPad checks for a Super Bonus every 5 seconds** (a tiny request), so it appears within seconds; the announcement plays its fanfare again after 15 seconds in case nobody was looking. Sound needs a tap since the app was opened (iOS rule).
+- **A Super Bonus wakes night mode**: one sent at bedtime still shows on the dashboard.

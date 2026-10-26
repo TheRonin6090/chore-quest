@@ -172,6 +172,29 @@ const MIGRATIONS: string[] = [
     idle_ms INTEGER NOT NULL
   );
   `,
+  // Super Bonus team challenges (superBonus.ts). Helpers' rewards are rows in bonuses.
+  `
+  CREATE TABLE super_bonuses (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    icon TEXT NOT NULL,
+    value_cents INTEGER NOT NULL,
+    kid_ids TEXT NOT NULL,
+    created_at INTEGER NOT NULL,
+    ends_at INTEGER NOT NULL,
+    completed_at INTEGER,
+    cancelled_at INTEGER,
+    undone_at INTEGER
+  );
+
+  CREATE TABLE super_bonus_helpers (
+    super_bonus_id INTEGER NOT NULL,
+    kid_id INTEGER NOT NULL,
+    PRIMARY KEY (super_bonus_id, kid_id)
+  );
+
+  ALTER TABLE bonuses ADD COLUMN super_bonus_id INTEGER;
+  `,
 ];
 
 export function openDb(file: string): DB {
@@ -225,4 +248,6 @@ export const TABLES = [
   'kid_state',
   'badges_earned',
   'sessions',
+  'super_bonuses',
+  'super_bonus_helpers',
 ] as const;

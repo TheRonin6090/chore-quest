@@ -566,3 +566,39 @@
     box-shadow: none;
   }
 }
+
+/* ---- Super Bonus ---- */
+
+.sb-parent-active {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.sb-parent-active > svg {
+  flex-shrink: 0;
+  margin-right: 12px;
+}
+
+.sb-parent-name {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.sb-parent-left {
+  margin-left: 12px;
+  font-size: 34px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.pform .sb-custom-min {
+  width: 130px;
+  margin: 0 6px 6px 0;
+  vertical-align: middle;
+}
+
+.pbtn svg {
+  vertical-align: middle;
+}

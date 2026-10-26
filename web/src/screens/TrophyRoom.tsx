@@ -1,7 +1,8 @@
 import { useState } from 'preact/hooks';
 import { get } from '../api';
+import { Avatar } from '../art/avatars';
 import { Icon } from '../art/icons';
-import { classes, money, usePoll } from '../lib';
+import { classes, money, shortDateOf, shortMoney, usePoll } from '../lib';
 import { themeDef, themeProps } from '../themes';
 import type { Trophies } from '../types';
 
@@ -62,6 +63,29 @@ export function TrophyRoom({ kidId, onBack }: { kidId: number; onBack: () => voi
         </div>
       )}
 
+      {data.superBonuses.count > 0 && (
+        <div>
+          <h2 class="trophy-heading">
+            <Icon name="bolt" size={40} /> Super Bonuses: {data.superBonuses.count}
+          </h2>
+          {data.superBonuses.recent.map((s) => (
+            <div key={s.id} class="done-row sb-trophy-row">
+              <Icon name={s.icon} size={52} />
+              <span class="done-name">
+                {s.name}
+                <span class="done-window"> · {shortDateOf(s.completedAt)}</span>
+              </span>
+              <span class="sb-trophy-team">
+                {s.team.map((k) => (
+                  <Avatar key={k.id} id={k.avatar} size={48} />
+                ))}
+              </span>
+              <span class="chore-value">+{shortMoney(s.valueCents)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
       <h2 class="trophy-heading">Badges</h2>
       <div class="badge-grid">
         {data.badges.map((b) => (
@@ -84,6 +108,12 @@ export function TrophyRoom({ kidId, onBack }: { kidId: number; onBack: () => voi
               </span>
             </div>
           ))}
+        </div>
+      )}
+
+      {data.superBonuses.count === 0 && (
+        <div class="kid-note">
+          <Icon name="bolt" size={28} /> Help finish a Super Bonus and it shows up here!
         </div>
       )}
     </div>

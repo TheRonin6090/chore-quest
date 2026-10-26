@@ -81,6 +81,22 @@ export function shortDate(date: string): string {
   return `${MONTHS[d.getUTCMonth()].slice(0, 3)} ${d.getUTCDate()}`;
 }
 
+/** Epoch ms → "Oct 11" in the household time zone. */
+export function shortDateOf(ms: number): string {
+  const d = householdTime(ms).date;
+  return `${MONTHS[d.getUTCMonth()].slice(0, 3)} ${d.getUTCDate()}`;
+}
+
+/** Milliseconds left → "4:05", or "1:04:05" over an hour. */
+export function countdownText(ms: number): string {
+  const s = Math.max(0, Math.ceil(ms / 1000));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  const pad = (n: number) => (n < 10 ? `0${n}` : String(n));
+  return h ? `${h}:${pad(m)}:${pad(sec)}` : `${m}:${pad(sec)}`;
+}
+
 export function weekdayOf(date: string): string {
   return DAY_SHORT[parseDate(date).getUTCDay()];
 }

@@ -165,6 +165,23 @@ export const sounds = {
   badge(theme: string): void {
     setFor(theme).badge();
   },
+  /** Super Bonus arrives: a "ta-da" call over a bass, then a sparkle run. */
+  superBonus(): void {
+    const call = [67, 67, 72, 76, 79];
+    const at = [0, 0.14, 0.28, 0.62, 0.76];
+    const dur = [0.12, 0.12, 0.45, 0.12, 0.9];
+    playNotes(call.map((m, i) => ({ freq: midi(m), at: at[i], dur: dur[i] })), 'square', 0.1);
+    playNotes([{ freq: midi(48), at: 0.28, dur: 0.45 }, { freq: midi(55), at: 0.76, dur: 0.9 }], 'triangle', 0.2);
+    playNotes(seq([91, 95, 98, 103, 107], 0.06, 0.25, 0.6).map((n) => ({ freq: n.freq, at: n.at + 0.95, dur: n.dur })), 'sine', 0.12);
+  },
+  /** Team finished a Super Bonus: a quick run up and three big chords. */
+  superWin(): void {
+    const chord = (at: number, notes: number[], dur: number): Note[] => notes.map((m) => ({ freq: midi(m), at, dur }));
+    playNotes(seq([60, 64, 67, 72, 76, 79, 84], 0.06, 0.14), 'square', 0.09);
+    playNotes(chord(0.5, [72, 76, 79], 0.2).concat(chord(0.75, [74, 77, 81], 0.2), chord(1.0, [76, 79, 84], 1.2)), 'square', 0.06);
+    playNotes(chord(0.5, [48], 0.2).concat(chord(0.75, [50], 0.2), chord(1.0, [52, 60], 1.2)), 'triangle', 0.2);
+    playNotes(seq([96, 100, 103, 108, 103, 108, 112], 0.07, 0.3, 0.8).map((n) => ({ freq: n.freq, at: n.at + 1.1, dur: n.dur })), 'sine', 0.1);
+  },
   undo(): void {
     playNotes(seq([76, 72], 0.08, 0.15), 'sine', 0.15);
   },

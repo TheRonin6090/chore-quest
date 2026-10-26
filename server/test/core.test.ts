@@ -26,6 +26,15 @@ import { addBonus, markPaid, weekMoney } from '../src/money.js';
 import { isEmpty, seed } from '../src/seed.js';
 import { exportJson, importJson } from '../src/stats.js';
 import { closeDays, streakInfo } from '../src/streaks.js';
+import {
+  activeSuperBonus,
+  completeSuperBonus,
+  extendSuperBonus,
+  kidSuperBonuses,
+  startSuperBonus,
+  undoSuperBonus,
+  validateSuperBonusInput,
+} from '../src/superBonus.js';
 import { addDays, localDate, minutesOfDay, weekStartOf, zonedTime } from '../src/time.js';
 
 // Tests run against the example household, in its time zone (it has DST).
@@ -436,5 +445,87 @@ test('http: parent lockout doubles; kid lockout stays at 30 s', async () => {
   await fiveWrong({ kidId: KID_A, pin: '9999' });
   clock += 31_000;
   assert.equal((await login({ kidId: KID_A, pin: '1111' })).statusCode, 200, 'kids never wait more than 30 s');
+  await app.close();
+});
+
+test('super bonus: one at a time, team reward per helper, badges, time limit, undo', () => {
+  const db = freshDb();
+  const t0 = at(WED, '15:00');
+  const input = (body: object) => validateSuperBonusInput(db, body);
+  assert.throws(() => input({ name: '', valueCents: 100, minutes: 30 }), /Name/);
+  assert.throws(() => input({ name: 'Garage', valueCents: 0, minutes: 30 }), /Reward/);
+  assert.throws(() => input({ name: 'Garage', valueCents: 100, minutes: 0 }), /Time/);
+  assert.deepEqual(input({ name: 'Garage', valueCents: 100, minutes: 30 }).kidIds, [KID_A, KID_B], 'everyone by default');
+
+  const sb = startSuperBonus(db, input({ name: 'Clean the garage', icon: 'broom', valueCents: 200, minutes: 30 }), t0);
+  assert.equal(sb.status, 'active');
+  assert.equal(activeSuperBonus(db, t0 + 29 * 60_000)?.id, sb.id);
+  assert.throws(() => startSuperBonus(db, input({ name: 'Another', valueCents: 100, minutes: 10 }), t0), /already running/);
+  assert.throws(() => completeSuperBonus(db, sb.id, [], t0), /who helped/);
+  assert.throws(() => completeSuperBonus(db, sb.id, [99], t0), /isn't on/);
+
+  // Finishing in the grace minute after zero still counts.
+  const done = completeSuperBonus(db, sb.id, [KID_A, KID_B], t0 + 30 * 60_000 + 30_000);
+  assert.equal(done.status, 'done');
+  assert.equal(activeSuperBonus(db, t0 + 31 * 60_000), null);
+  const ws = weekStartOf(WED, 0);
+  assert.equal(weekMoney(db, KID_A, ws).bonusCents, 200, 'each helper earns the reward');
+  assert.equal(weekMoney(db, KID_B, ws).bonusCents, 200);
+  const earned = evaluateBadges(db, KID_A, t0 + 31 * 60_000);
+  assert.ok(earned.includes('super-1') && earned.includes('dream-team'), earned.join());
+  assert.equal(kidSuperBonuses(db, KID_A, t0)[0].name, 'Clean the garage');
+
+  // Running out of time: it's simply over, and nobody can claim it.
+  const late = startSuperBonus(db, input({ name: 'Rake leaves', valueCents: 100, minutes: 10, kidIds: [KID_B] }), at(WED, '16:00'));
+  assert.equal(extendSuperBonus(db, late.id, 5, at(WED, '16:05')).endsAt, at(WED, '16:15'));
+  assert.throws(() => completeSuperBonus(db, late.id, [KID_B], at(WED, '16:17')), /over/);
+  assert.equal(activeSuperBonus(db, at(WED, '16:17')), null);
+
+  // Undo takes the rewards back unless the week is paid; badges stay.
+  const solo = startSuperBonus(db, input({ name: 'Wash the car', valueCents: 300, minutes: 20, kidIds: [KID_B] }), at(WED, '17:00'));
+  completeSuperBonus(db, solo.id, [KID_B], at(WED, '17:10'));
+  assert.equal(weekMoney(db, KID_B, ws).bonusCents, 500);
+  assert.equal(undoSuperBonus(db, solo.id, at(WED, '17:20')).status, 'undone');
+  assert.equal(weekMoney(db, KID_B, ws).bonusCents, 200);
+  assert.throws(() => undoSuperBonus(db, solo.id, at(WED, '17:21')), /finished/);
+  markPaid(db, KID_A, ws, at(WED, '18:00'));
+  assert.throws(() => undoSuperBonus(db, sb.id, at(WED, '18:01')), /paid/);
+  assert.ok(badgeViews(db, KID_A).find((b) => b.id === 'super-1')?.earnedAt);
+
+  // It survives an export and import.
+  assert.equal(importJson(db, exportJson(db, at(WED, '19:00'))).super_bonuses, 3);
+});
+
+test('http: parent sends a Super Bonus, the iPad sees it, kids finish it', async () => {
+  const db = freshDb();
+  updateSettings(db, { parentPinMustChange: false });
+  let clock = at(WED, '15:00');
+  const app = await buildApp({ db, now: () => clock, logger: false, serveStatic: false });
+  const body = { name: 'Clean the garage', icon: 'broom', valueCents: 250, minutes: 15 };
+  assert.equal((await app.inject({ method: 'POST', url: '/api/parent/super-bonuses', payload: body })).statusCode, 401, 'parents only');
+  const p = (await app.inject({ method: 'POST', url: '/api/login', payload: { role: 'parent', pin: '0000' } })).json();
+  const auth = { authorization: `Bearer ${p.token}` };
+  const sent = await app.inject({ method: 'POST', url: '/api/parent/super-bonuses', payload: body, headers: auth });
+  assert.equal(sent.statusCode, 200);
+  const id = sent.json().superBonus.id;
+
+  clock += 5 * 60_000;
+  const seen = (await app.inject({ method: 'GET', url: '/api/super-bonus' })).json();
+  assert.equal(seen.active.id, id);
+  assert.equal(seen.active.endsAt, at(WED, '15:15'));
+
+  const done = await app.inject({ method: 'POST', url: `/api/super-bonus/${id}/complete`, payload: { helpers: [KID_A] } });
+  assert.equal(done.statusCode, 200);
+  assert.deepEqual(done.json().awarded[0].badges.map((b: { id: string }) => b.id), ['super-1']);
+  assert.equal((await app.inject({ method: 'POST', url: `/api/super-bonus/${id}/complete`, payload: { helpers: [KID_B] } })).statusCode, 409, 'only once');
+  assert.equal((await app.inject({ method: 'GET', url: '/api/super-bonus' })).json().active, null);
+
+  const kidA = (await app.inject({ method: 'POST', url: '/api/login', payload: { kidId: KID_A, pin: '1111' } })).json();
+  const trophies = (await app.inject({ method: 'GET', url: `/api/kids/${KID_A}/trophies`, headers: { authorization: `Bearer ${kidA.token}` } })).json();
+  assert.equal(trophies.superBonuses.count, 1);
+  assert.equal(trophies.superBonuses.recent[0].team[0].id, KID_A);
+  const today = (await app.inject({ method: 'GET', url: `/api/kids/${KID_A}/today`, headers: { authorization: `Bearer ${kidA.token}` } })).json();
+  assert.equal(today.weekCents, 250);
+  assert.ok(today.celebrations.some((b: { id: string }) => b.id === 'super-1'), 'the badge waits for the kid');
   await app.close();
 });

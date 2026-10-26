@@ -6,7 +6,8 @@ import { sounds } from '../audio';
 import { BadgeCelebration, CompletionBurst, CountUp, MoneyJar } from '../components';
 import { classes, shortMoney, timeOfDay, usePoll, WINDOW_LABELS } from '../lib';
 import { THEMES, themeDef, themeProps } from '../themes';
-import type { ActionResult, DoneView, Group, InstanceView, KidToday, Theme } from '../types';
+import type { ActionResult, DoneView, Group, InstanceView, KidToday, SuperBonus, Theme } from '../types';
+import { SuperBanner } from './SuperBonus';
 
 const SECTIONS: { group: Group; title: string }[] = [
   { group: 'now', title: 'Now' },
@@ -15,7 +16,22 @@ const SECTIONS: { group: Group; title: string }[] = [
   { group: 'bonus', title: 'Bonus' },
 ];
 
-export function KidScreen({ kidId, onBack, onTrophies }: { kidId: number; onBack: () => void; onTrophies: () => void }) {
+export function KidScreen({
+  kidId,
+  onBack,
+  onTrophies,
+  superBonus,
+  onSuper,
+  refresh,
+}: {
+  kidId: number;
+  onBack: () => void;
+  onTrophies: () => void;
+  superBonus: SuperBonus | null;
+  onSuper: () => void;
+  /** Changes after a Super Bonus is finished, to show the new total right away. */
+  refresh: number;
+}) {
   const [today, setToday] = useState<KidToday | null>(null);
   const [burst, setBurst] = useState<{ cents: number; key: number } | null>(null);
   const [showDone, setShowDone] = useState(false);
@@ -34,7 +50,7 @@ export function KidScreen({ kidId, onBack, onTrophies }: { kidId: number; onBack
         if (err instanceof ApiError && err.status === 401) onBack();
         else setMessage('Reconnecting…');
       });
-  }, 15000, [kidId]);
+  }, 15000, [kidId, refresh]);
 
   if (!today) return <div class="kid-screen loading">Loading…</div>;
   const theme = today.kid.theme;
@@ -126,6 +142,8 @@ export function KidScreen({ kidId, onBack, onTrophies }: { kidId: number; onBack
           )}
         </div>
       </div>
+
+      {superBonus && superBonus.kidIds.indexOf(kidId) >= 0 && <SuperBanner sb={superBonus} onDone={onSuper} />}
 
       {today.cap && today.cap.reached && <div class="kid-note">You reached this week's max! Amazing work!</div>}
       {today.day.dayOff && <div class="kid-note">Day off today! Bonus chores are still here if you want them.</div>}

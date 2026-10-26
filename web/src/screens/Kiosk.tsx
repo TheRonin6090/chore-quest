@@ -1,16 +1,18 @@
 // The wall iPad: dashboard → PIN → kid chore screen / Trophy Room, plus Parent Mode.
 import { useState } from 'preact/hooks';
-import { fetchState, post, setToken } from '../api';
+import { fetchState, get, post, setToken } from '../api';
 import { Avatar } from '../art/avatars';
 import { Icon } from '../art/icons';
 import { configureSound } from '../audio';
 import { BigClock, PinPad, ProgressRing } from '../components';
 import { classes, navigate, useIdle, usePoll, useRoute } from '../lib';
+import { serverNow } from '../serverClock';
 import { themeProps } from '../themes';
-import type { AppState, Kid, Session } from '../types';
+import type { AppState, Kid, Session, SuperBonus, SuperBonusResult } from '../types';
 import { DeviceCheck } from './DeviceCheck';
 import { KidScreen } from './KidScreen';
 import { ParentApp } from './parent/ParentApp';
+import { SuperAnnounce, SuperBanner, SuperCelebration, TeamPicker } from './SuperBonus';
 import { TrophyRoom } from './TrophyRoom';
 
 type PinTarget = { kind: 'kid'; kid: Kid } | { kind: 'parent' } | null;
@@ -35,6 +37,21 @@ export function KioskApp() {
   const [offline, setOffline] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
   const [pinFor, setPinFor] = useState<PinTarget>(null);
+  const [superBonus, setSuperBonus] = useState<SuperBonus | null>(null);
+  const [announced, setAnnounced] = useState(0);
+  const [picking, setPicking] = useState(false);
+  const [win, setWin] = useState<SuperBonusResult | null>(null);
+  const [refresh, setRefresh] = useState(0);
+
+  // A Super Bonus should show up within seconds of the parent sending it; this answer is tiny.
+  usePoll(() => {
+    get<{ active: SuperBonus | null }>('/api/super-bonus')
+      .then((r) => {
+        setSuperBonus(r.active);
+        if (!r.active) setPicking(false);
+      })
+      .catch(() => undefined);
+  }, 5000);
 
   usePoll(() => {
     fetchState()
@@ -70,7 +87,21 @@ export function KioskApp() {
     navigate(target.kind === 'kid' ? `/kid/${target.kid.id}` : '/parent/today');
   }
 
+  function superDone(r: SuperBonusResult) {
+    setPicking(false);
+    setSuperBonus(null);
+    setWin(r);
+    setRefresh((n) => n + 1);
+    fetchState()
+      .then(setState)
+      .catch(() => undefined);
+  }
+
   const parts = route.split('/').filter(Boolean);
+  // Not over Parent Mode or the diagnostics page.
+  const superHere = !!state && parts[0] !== 'check' && !(parts[0] === 'parent' && session && session.role === 'parent');
+  const sb = superHere ? superBonus : null;
+  const openTeam = () => setPicking(true);
   let screen;
   if (parts[0] === 'check') {
     screen = <DeviceCheck />;
@@ -79,7 +110,14 @@ export function KioskApp() {
       parts[2] === 'trophies' ? (
         <TrophyRoom kidId={session.kidId} onBack={() => navigate(`/kid/${session.kidId}`)} />
       ) : (
-        <KidScreen kidId={session.kidId} onBack={endSession} onTrophies={() => navigate(`/kid/${session.kidId}/trophies`)} />
+        <KidScreen
+          kidId={session.kidId}
+          onBack={endSession}
+          onTrophies={() => navigate(`/kid/${session.kidId}/trophies`)}
+          superBonus={sb}
+          onSuper={openTeam}
+          refresh={refresh}
+        />
       );
   } else if (parts[0] === 'parent' && session && session.role === 'parent') {
     screen = (
@@ -94,7 +132,16 @@ export function KioskApp() {
     );
   } else {
     if (route !== '/') navigate('/');
-    screen = <Dashboard state={state} offline={offline} onKid={(kid) => setPinFor({ kind: 'kid', kid })} onParent={() => setPinFor({ kind: 'parent' })} />;
+    screen = (
+      <Dashboard
+        state={state}
+        offline={offline}
+        superBonus={sb}
+        onSuper={openTeam}
+        onKid={(kid) => setPinFor({ kind: 'kid', kid })}
+        onParent={() => setPinFor({ kind: 'parent' })}
+      />
+    );
   }
 
   return (
@@ -111,11 +158,30 @@ export function KioskApp() {
           onCancel={() => setPinFor(null)}
         />
       )}
+      {sb && state && picking && <TeamPicker sb={sb} kids={state.kids} onCancel={() => setPicking(false)} onDone={superDone} />}
+      {sb && state && !picking && sb.id !== announced && sb.endsAt > serverNow() && (
+        <SuperAnnounce sb={sb} kids={state.kids} onGo={() => setAnnounced(sb.id)} />
+      )}
+      {win && state && <SuperCelebration result={win} kids={state.kids} onClose={() => setWin(null)} />}
     </div>
   );
 }
 
-function Dashboard({ state, offline, onKid, onParent }: { state: AppState | null; offline: boolean; onKid: (k: Kid) => void; onParent: () => void }) {
+function Dashboard({
+  state,
+  offline,
+  superBonus,
+  onSuper,
+  onKid,
+  onParent,
+}: {
+  state: AppState | null;
+  offline: boolean;
+  superBonus: SuperBonus | null;
+  onSuper: () => void;
+  onKid: (k: Kid) => void;
+  onParent: () => void;
+}) {
   const [awake, setAwake] = useState(false);
   useIdle(60000, () => setAwake(false), awake);
 
@@ -128,7 +194,8 @@ function Dashboard({ state, offline, onKid, onParent }: { state: AppState | null
     );
   }
 
-  if (state.nightMode && !awake) {
+  // A Super Bonus sent at bedtime still shows.
+  if (state.nightMode && !awake && !superBonus) {
     return (
       <div class="night" onClick={() => setAwake(true)}>
         <BigClock size="huge" />
@@ -140,8 +207,8 @@ function Dashboard({ state, offline, onKid, onParent }: { state: AppState | null
   const greeting = state.window ? GREETINGS[state.window] : 'Good Night!';
   const many = state.kids.length > 2;
   return (
-    <div class={classes('dashboard', `sky-${skyPhase(state.minutes)}`)}>
-      <div class="dash-greeting">{greeting}</div>
+    <div class={classes('dashboard', `sky-${skyPhase(state.minutes)}`, superBonus && 'has-super')}>
+      {superBonus ? <SuperBanner sb={superBonus} onDone={onSuper} /> : <div class="dash-greeting">{greeting}</div>}
       <BigClock />
       <div class={classes('dash-cards', many && 'dash-cards-many')}>
         {state.kids.map((k) => {

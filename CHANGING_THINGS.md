@@ -32,6 +32,8 @@ Run `npm test`, `npm run lint` and `npm run build` after any change: lint and th
   | `perfectDay` | — | every Required chore done in one day |
   | `perfectWeek` | — | a whole week of perfect days (days off don't break it) |
   | `windowBefore` | `window`, `minutes` | every Required chore in that window done before that time (minutes after midnight) |
+  | `superBonus` | `count` | helped finish that many Super Bonuses |
+  | `superTeam` | — | finished a Super Bonus together with every kid it was sent to (at least two) |
 
 New badges are checked after every completion, bonus and midnight close-out, so existing progress counts straight away. A new rule kind needs a case in `earned()` and, usually, a fact in `context()` in the same file.
 

@@ -6,6 +6,7 @@ import { activeCompletionsOn, instancesFor, kidDay } from './chores.js';
 import { getSettings, type DB } from './db.js';
 import { household } from './household.js';
 import { allDoneBefore, streakInfo } from './streaks.js';
+import { didFullTeamSuperBonus, superBonusCount } from './superBonus.js';
 import { localDate, weekStartOf, zonedTime } from './time.js';
 
 export type BadgeRule =
@@ -16,7 +17,9 @@ export type BadgeRule =
   | { kind: 'streak'; days: number }
   | { kind: 'perfectDay' }
   | { kind: 'perfectWeek' }
-  | { kind: 'windowBefore'; window: 'morning' | 'afternoon' | 'evening'; minutes: number };
+  | { kind: 'windowBefore'; window: 'morning' | 'afternoon' | 'evening'; minutes: number }
+  | { kind: 'superBonus'; count: number }
+  | { kind: 'superTeam' };
 
 export interface BadgeDef {
   id: string;
@@ -46,6 +49,10 @@ export const BADGES: BadgeDef[] = [
   { id: 'streak-7', name: '7-Day Streak', hint: 'Do all your chores 7 days in a row.', glyph: 'flame', rule: { kind: 'streak', days: 7 } },
   { id: 'streak-14', name: '14-Day Streak', hint: 'Do all your chores 14 days in a row.', glyph: 'flame', rule: { kind: 'streak', days: 14 } },
   { id: 'streak-30', name: '30-Day Streak', hint: 'Do all your chores 30 days in a row.', glyph: 'flame', rule: { kind: 'streak', days: 30 } },
+  { id: 'super-1', name: 'Super Helper', hint: 'Help finish a Super Bonus.', glyph: 'bolt', rule: { kind: 'superBonus', count: 1 } },
+  { id: 'super-5', name: 'Super Squad', hint: 'Help finish 5 Super Bonuses.', glyph: 'superstar', rule: { kind: 'superBonus', count: 5 } },
+  { id: 'super-15', name: 'Super Legend', hint: 'Help finish 15 Super Bonuses.', glyph: 'crown', rule: { kind: 'superBonus', count: 15 } },
+  { id: 'dream-team', name: 'Dream Team', hint: 'Finish a Super Bonus with the whole team.', glyph: 'team', rule: { kind: 'superTeam' } },
 ];
 
 /** The built-in badges plus this household's chore badges. Throws if a chore badge reuses a built-in id. */
@@ -116,6 +123,8 @@ function context(db: DB, kidId: number, now: number) {
         }
         return false;
       }),
+    superBonus: () => memo('superBonus', () => superBonusCount(db, kidId)),
+    superTeam: () => memo('superTeam', () => didFullTeamSuperBonus(db, kidId)),
     windowBefore: (window: string, minutes: number) => {
       const date = localDate(now);
       const instances = instancesFor(db, kidId, date).filter((i) => i.window === window && i.chore.type === 'required');
@@ -142,6 +151,10 @@ function earned(rule: BadgeRule, ctx: ReturnType<typeof context>): boolean {
       return ctx.perfectWeek();
     case 'windowBefore':
       return ctx.windowBefore(rule.window, rule.minutes);
+    case 'superBonus':
+      return ctx.superBonus() >= rule.count;
+    case 'superTeam':
+      return ctx.superTeam();
   }
 }
 

@@ -1,6 +1,6 @@
 // Kid themes. Everything theme-specific lives here (colors, celebration art, money visual,
 // wording); sounds are in audio.ts and avatars in art/avatars.tsx. To add a theme, add an entry
-// here, a sound set in audio.ts, and its id + avatars to THEMES/AVATARS in server/src/app.ts.
+// here, a sound set in audio.ts, and its id + avatars to THEMES/AVATARS in server/src/looks.ts.
 import type { JSX } from 'preact';
 
 export interface ThemeDef {

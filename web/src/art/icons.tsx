@@ -374,6 +374,25 @@ const ICONS: Record<string, () => JSX.Element> = {
       <rect x="10" y="22" width="28" height="20" rx="4" fill="#b8c4cc" />
     </g>
   ),
+  // ---- Super Bonus ----
+  bolt: () => <path d="M28 3L9 27h13l-4 18 21-26H26z" fill="#ffd166" />,
+  superstar: () => (
+    <g>
+      <path d="M5 8l4 4M43 8l-4 4M5 40l4-4M43 40l-4-4M24 1v3" />
+      <path d="M24 6l5.2 11.3 12.3 1.3-9.2 8.3 2.6 12.1L24 33l-10.9 6 2.6-12.1-9.2-8.3 12.3-1.3z" fill="#ff9f1c" />
+      <path d="M24 14l2.8 6 6.6.7-5 4.5 1.4 6.5L24 28.4l-5.8 3.3 1.4-6.5-5-4.5 6.6-.7z" fill="#ffe066" stroke="none" />
+    </g>
+  ),
+  team: () => (
+    <g>
+      <path d="M3 38c0-7 4-12 9-12s9 5 9 12z" fill="#ff7ac8" />
+      <circle cx="12" cy="18" r="5.5" fill="#ffd6ec" />
+      <path d="M27 38c0-7 4-12 9-12s9 5 9 12z" fill="#5aa9e6" />
+      <circle cx="36" cy="18" r="5.5" fill="#d6ecff" />
+      <path d="M13 45c0-9 5-14 11-14s11 5 11 14z" fill="#3fae6a" />
+      <circle cx="24" cy="22" r="6.5" fill="#ffe0a3" />
+    </g>
+  ),
   check: () => <path d="M9 25l10 10 20-22" fill="none" stroke-width="6" />,
   back: () => <path d="M28 8L12 24l16 16" fill="none" stroke-width="6" />,
 };

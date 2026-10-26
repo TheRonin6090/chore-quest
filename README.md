@@ -13,7 +13,8 @@ What's in it:
 - Chores with checklist steps
 - Shared "whoever does it first" chores
 - One-time chores and bonus chores
-- Weekly caps, days off, streaks with freeze tokens, 17 built-in badges plus your own
+- Weekly caps, days off, streaks with freeze tokens, 21 built-in badges plus your own
+- **Super Bonus** team challenges: send one from your phone and the iPad announces it with a fanfare and a countdown; the kids pick who helped and each helper earns the reward
 - A Trophy Room
 - Parent reports and charts, a printable weekly summary
 - CSV/JSON export and nightly backups
@@ -74,7 +75,7 @@ On first start, the server reads `household.json` from the data folder to set up
   - Ocean: `mermaid`, `octopus`, `dolphin`, `turtle`
   - Dino: `trex`, `triceratops`, `explorer`, `pterodactyl`
 - **Chore icons:** `toys` `shirt` `drawer` `table` `sofa` `backpack` `shower` `shampoo` `tooth` `bowl` `plate` `dog` `cat` `pill` `cupboard` `dishwasher` `coffee` `pajamas` `plant` `car` `broom` `trash` `book` `bed` `star` `heart` `fish` `leaf` `rocket`. An unknown name shows a star.
-- **Badge glyphs:** any chore icon, or `medal` `trophy` `crown` `sun` `sunrise` `moon` `calendar` `gem` `coin` `coins` `chest` `flame` `snowflake` `planet` `shell` `bubble` `egg` `footprint`.
+- **Badge glyphs:** any chore icon, or `medal` `trophy` `crown` `sun` `sunrise` `moon` `calendar` `gem` `coin` `coins` `chest` `flame` `snowflake` `planet` `shell` `bubble` `egg` `footprint` `bolt` `superstar` `team`.
 
 ## What's where
 

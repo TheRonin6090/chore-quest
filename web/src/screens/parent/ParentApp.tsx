@@ -10,6 +10,7 @@ import { ChoreEditor, ChoresTab } from './Chores';
 import { AllowanceTab, SummaryPage } from './Money';
 import { ChartsTab, HistoryTab } from './Reports';
 import { DataTab, SettingsTab } from './SettingsTab';
+import { SuperBonusTab } from './SuperBonusTab';
 
 export interface ParentCtx {
   mode: 'kiosk' | 'web';
@@ -18,6 +19,7 @@ export interface ParentCtx {
 
 const TABS = [
   { path: '/today', label: 'Today' },
+  { path: '/super', label: 'Super Bonus' },
   { path: '/chores', label: 'Chores' },
   { path: '/allowance', label: 'Allowance' },
   { path: '/history', label: 'History' },
@@ -56,6 +58,7 @@ export function ParentApp({
   else if (tab === '/charts') body = <ChartsTab />;
   else if (tab === '/settings') body = <SettingsTab ctx={ctx} />;
   else if (tab === '/data') body = <DataTab ctx={ctx} />;
+  else if (tab === '/super') body = <SuperBonusTab />;
   else body = <TodayTab />;
 
   return (

@@ -29,6 +29,18 @@ import { backupNow } from './maintenance.js';
 import { addBonus, currentWeekStart, lifetimeCents, listBonuses, markPaid, recentWeeks, unmarkPaid, weekMoney } from './money.js';
 import { chartData, completionsCsv, exportJson, formatLocal, history, importJson, kidsList, ledgerCsv, weekSummary } from './stats.js';
 import { choreStreaks, streakInfo } from './streaks.js';
+import {
+  activeSuperBonus,
+  cancelSuperBonus,
+  completeSuperBonus,
+  extendSuperBonus,
+  kidSuperBonuses,
+  listSuperBonuses,
+  startSuperBonus,
+  superBonusCount,
+  undoSuperBonus,
+  validateSuperBonusInput,
+} from './superBonus.js';
 import { addDays, localDate, minutesOfDay, tzOffsetMinutes, weekStartOf } from './time.js';
 
 declare module 'fastify' {
@@ -325,12 +337,68 @@ export async function buildApp(opts: AppOptions): Promise<FastifyInstance> {
     const t = now();
     const total = (db.prepare('SELECT COUNT(*) AS n FROM completions WHERE kid_id = ? AND undone_at IS NULL').get(kidId) as { n: number }).n;
     const perfectDays = (db.prepare("SELECT COUNT(*) AS n FROM day_summaries WHERE kid_id = ? AND status = 'done'").get(kidId) as { n: number }).n;
+    const kids = kidsList(db);
     return {
       badges: badgeViews(db, kidId),
       streak: streakInfo(db, kidId, t),
       choreStreaks: choreStreaks(db, kidId, t).slice(0, 6),
       stats: { totalChores: total, lifetimeCents: lifetimeCents(db, kidId), perfectDays },
+      superBonuses: {
+        count: superBonusCount(db, kidId),
+        recent: kidSuperBonuses(db, kidId, t, 10).map((sb) => ({
+          id: sb.id,
+          name: sb.name,
+          icon: sb.icon,
+          valueCents: sb.valueCents,
+          completedAt: sb.completedAt,
+          team: sb.helpers.map((id) => kids.find((k) => k.id === id)).filter((k) => !!k),
+        })),
+      },
     };
+  });
+
+  // --- Super Bonus -------------------------------------------------------------
+  // The wall iPad polls the running one; anyone at the iPad can say who helped, like a chore tap.
+
+  app.get('/api/super-bonus', async () => ({ active: activeSuperBonus(db, now()) }));
+
+  app.post<{ Params: { id: string }; Body: { helpers: number[] } }>('/api/super-bonus/:id/complete', async (req) => {
+    const t = now();
+    const sb = completeSuperBonus(db, int(req.params.id, 'id'), req.body?.helpers, t);
+    const awarded = sb.helpers.map((kidId) => {
+      const ids = evaluateBadges(db, kidId, t);
+      return { kidId, badges: badgeViews(db, kidId).filter((v) => ids.includes(v.id)) };
+    });
+    req.log.info({ superBonus: sb.id, helpers: sb.helpers }, 'super bonus completed');
+    return { superBonus: sb, awarded };
+  });
+
+  app.get('/api/parent/super-bonuses', async (req) => {
+    requireParent(req);
+    const t = now();
+    return { active: activeSuperBonus(db, t), recent: listSuperBonuses(db, t), kids: kidsList(db) };
+  });
+
+  app.post('/api/parent/super-bonuses', async (req) => {
+    requireParent(req);
+    const sb = startSuperBonus(db, validateSuperBonusInput(db, req.body), now());
+    req.log.info({ superBonus: sb.id, name: sb.name, endsAt: sb.endsAt }, 'super bonus sent');
+    return { superBonus: sb };
+  });
+
+  app.post<{ Params: { id: string } }>('/api/parent/super-bonuses/:id/cancel', async (req) => {
+    requireParent(req);
+    return { superBonus: cancelSuperBonus(db, int(req.params.id, 'id'), now()) };
+  });
+
+  app.post<{ Params: { id: string }; Body: { minutes: number } }>('/api/parent/super-bonuses/:id/extend', async (req) => {
+    requireParent(req);
+    return { superBonus: extendSuperBonus(db, int(req.params.id, 'id'), int(req.body?.minutes, 'minutes'), now()) };
+  });
+
+  app.post<{ Params: { id: string } }>('/api/parent/super-bonuses/:id/undo', async (req) => {
+    requireParent(req);
+    return { superBonus: undoSuperBonus(db, int(req.params.id, 'id'), now()) };
   });
 
   // --- parent ---------------------------------------------------------------

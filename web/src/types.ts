@@ -113,6 +113,29 @@ export interface Trophies {
   streak: StreakInfo;
   choreStreaks: { choreId: number; window: WindowId; name: string; icon: string; count: number }[];
   stats: { totalChores: number; lifetimeCents: number; perfectDays: number };
+  superBonuses: {
+    count: number;
+    recent: { id: number; name: string; icon: string; valueCents: number; completedAt: number; team: Kid[] }[];
+  };
+}
+
+export interface SuperBonus {
+  id: number;
+  name: string;
+  icon: string;
+  /** Paid to each helper. */
+  valueCents: number;
+  kidIds: number[];
+  createdAt: number;
+  endsAt: number;
+  completedAt: number | null;
+  helpers: number[];
+  status: 'active' | 'done' | 'expired' | 'cancelled' | 'undone';
+}
+
+export interface SuperBonusResult {
+  superBonus: SuperBonus;
+  awarded: { kidId: number; badges: BadgeView[] }[];
 }
 
 export interface Chore {

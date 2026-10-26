@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { ApiError } from './api';
 import { Avatar } from './art/avatars';
 import { Icon } from './art/icons';
-import { sounds } from './audio';
+import { audioNeedsTap, onAudioChange, sounds } from './audio';
 import { classes, clockText, money } from './lib';
 import { serverNow } from './serverClock';
 import { themeDef, themeProps } from './themes';
@@ -18,6 +18,15 @@ export function useServerTime(intervalMs = 1000): number {
     return () => clearInterval(id);
   }, [intervalMs]);
   return now;
+}
+
+// ---- sound -------------------------------------------------------------------
+
+/** True until the first tap lets iOS play sound (and again if iOS suspends it). */
+export function useAudioNeedsTap(): boolean {
+  const [needs, setNeeds] = useState(audioNeedsTap());
+  useEffect(() => onAudioChange(() => setNeeds(audioNeedsTap())), []);
+  return needs;
 }
 
 export function BigClock({ size = 'big' }: { size?: 'big' | 'huge' }) {

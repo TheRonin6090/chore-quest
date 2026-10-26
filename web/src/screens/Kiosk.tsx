@@ -4,7 +4,7 @@ import { fetchState, get, post, setToken } from '../api';
 import { Avatar } from '../art/avatars';
 import { Icon } from '../art/icons';
 import { configureSound } from '../audio';
-import { BigClock, PinPad, ProgressRing } from '../components';
+import { BigClock, PinPad, ProgressRing, useAudioNeedsTap } from '../components';
 import { classes, navigate, useIdle, usePoll, useRoute } from '../lib';
 import { serverNow } from '../serverClock';
 import { themeProps } from '../themes';
@@ -184,6 +184,7 @@ function Dashboard({
 }) {
   const [awake, setAwake] = useState(false);
   useIdle(60000, () => setAwake(false), awake);
+  const needsTap = useAudioNeedsTap();
 
   if (!state) {
     return (
@@ -235,6 +236,8 @@ function Dashboard({
           );
         })}
       </div>
+      {/* After the app is reopened, so the next Super Bonus fanfare isn't silent. */}
+      {needsTap && <div class="sound-hint">Tap anywhere to turn on sounds</div>}
       <button class="parent-entry" onClick={onParent} aria-label="Parent mode">
         <Icon name="gear" size={34} />
       </button>

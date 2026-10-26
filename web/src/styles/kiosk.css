@@ -129,6 +129,21 @@
   opacity: 0.6;
 }
 
+/* Shown until the first tap after the app opens (iOS plays no sound before that). Bottom left,
+   clear of the parent gear on the right. */
+.sound-hint {
+  position: absolute;
+  left: 12px;
+  bottom: 22px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
 /* ---- night mode ---- */
 
 .night {
@@ -737,7 +752,7 @@
 }
 
 .sb-title {
-  font-size: 84px;
+  font-size: 72px;
   font-weight: 900;
   letter-spacing: 2px;
   color: #ffd166;
@@ -749,9 +764,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 230px;
-  height: 230px;
-  margin: 18px 0 10px;
+  position: relative;
+  width: 190px;
+  height: 190px;
+  margin: 14px 0 26px;
   border: 10px solid var(--gold);
   border-radius: 50%;
   background: #fff3c4;
@@ -759,7 +775,7 @@
 }
 
 .sb-name {
-  font-size: 54px;
+  font-size: 46px;
   font-weight: 800;
   line-height: 1.15;
   margin: 6px 0 12px;
@@ -776,7 +792,7 @@
 }
 
 .sb-team {
-  margin: 20px 0 6px;
+  margin: 12px 0 6px;
 }
 
 .sb-team svg {
@@ -784,7 +800,7 @@
 }
 
 .sb-timer .sb-countdown {
-  font-size: 96px;
+  font-size: 84px;
   line-height: 1.05;
 }
 
@@ -798,8 +814,27 @@
   opacity: 0.85;
 }
 
+/* The announcement is about 880 px tall, to fit Safari's 954 px viewport on the iPad. */
 .sb-go {
-  margin-top: 24px;
+  margin-top: 14px;
+}
+
+/* A sticker on the hero's lower edge, out of the layout flow so the announcement keeps its height. */
+.sb-tap-hint {
+  position: absolute;
+  left: 50%;
+  bottom: -22px;
+  width: 260px;
+  margin-left: -130px;
+  padding: 6px 0;
+  border-radius: 999px;
+  background: #d9381e;
+  color: #fff;
+  font-size: 28px;
+  font-weight: 800;
+  white-space: nowrap;
+  animation: sb-pulse 1s ease-in-out infinite;
+  pointer-events: none;
 }
 
 .sb-spark {

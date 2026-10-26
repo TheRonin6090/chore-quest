@@ -5,7 +5,7 @@ import { ApiError, post } from '../api';
 import { Avatar } from '../art/avatars';
 import { Icon } from '../art/icons';
 import { sounds } from '../audio';
-import { useServerTime } from '../components';
+import { useAudioNeedsTap, useServerTime } from '../components';
 import { classes, countdownText, money } from '../lib';
 import type { Kid, SuperBonus, SuperBonusResult } from '../types';
 
@@ -26,12 +26,16 @@ const SPARKS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
 /** Full screen, with a fanfare, when a new Super Bonus arrives. Closes itself when time runs out. */
 export function SuperAnnounce({ sb, kids, onGo }: { sb: SuperBonus; kids: Kid[]; onGo: () => void }) {
+  // After the iPad app is reopened, iOS stays silent until the first tap, so the fanfare waits
+  // for it (any tap on the screen) instead of playing to nobody.
+  const needsTap = useAudioNeedsTap();
   useEffect(() => {
+    if (needsTap) return;
     sounds.superBonus();
     // Once more in case nobody was looking the first time.
     const id = setTimeout(() => sounds.superBonus(), 15000);
     return () => clearTimeout(id);
-  }, [sb.id]);
+  }, [sb.id, needsTap]);
   const team = kids.filter((k) => sb.kidIds.indexOf(k.id) >= 0);
   return (
     <div class="sb-overlay">
@@ -44,7 +48,8 @@ export function SuperAnnounce({ sb, kids, onGo }: { sb: SuperBonus; kids: Kid[];
       <div class="sb-announce">
         <div class="sb-title">SUPER BONUS!</div>
         <div class="sb-hero">
-          <Icon name={sb.icon} size={190} />
+          <Icon name={sb.icon} size={160} />
+          {needsTap && <div class="sb-tap-hint">Tap for sound!</div>}
         </div>
         <div class="sb-name">{sb.name}</div>
         <div class="sb-reward">{rewardText(sb)}</div>

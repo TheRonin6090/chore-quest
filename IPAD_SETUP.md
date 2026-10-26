@@ -29,7 +29,7 @@ The iPad may show "No Internet Connection" under Wi-Fi. That's expected and harm
 
 - Make sure the **side switch** isn't set to Mute. If it mutes, web sounds are silent. Either flip it, or set it to lock rotation instead: Settings → General → **Use Side Switch To: Lock Rotation**.
 - Turn the volume up with the side buttons while the app is open.
-- The first tap after the app opens turns sound on (iOS rule).
+- The first tap after the app opens turns sound on (iOS rule). Until then the dashboard says "Tap anywhere to turn on sounds"; tap once after reopening the app so a Super Bonus fanfare plays the moment it arrives.
 
 ## 4. Keep the screen on
 

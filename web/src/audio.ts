@@ -4,6 +4,32 @@
 
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
+let enabled = true;
+let volume = 0.7;
+
+// Screens that need to know whether sound can play yet (the "tap to turn on sounds" hints).
+const listeners: Array<() => void> = [];
+let lastNeedsTap = true;
+
+/** True when sound is switched on in settings but iOS won't play it until someone taps. */
+export function audioNeedsTap(): boolean {
+  return enabled && !(ctx && ctx.state === 'running');
+}
+
+export function onAudioChange(fn: () => void): () => void {
+  listeners.push(fn);
+  return () => {
+    const i = listeners.indexOf(fn);
+    if (i >= 0) listeners.splice(i, 1);
+  };
+}
+
+function notify() {
+  const now = audioNeedsTap();
+  if (now === lastNeedsTap) return;
+  lastNeedsTap = now;
+  listeners.slice().forEach((fn) => fn());
+}
 
 function getConstructor(): typeof AudioContext | undefined {
   // Unprefixed first for newer browsers (parent phones); the iPad only has the webkit one.
@@ -41,10 +67,16 @@ export function unlockAudio(): void {
     master = ctx.createGain();
     master.gain.value = 0.6;
     master.connect(ctx.destination);
+    ctx.onstatechange = notify;
   }
   playSilentBuffer(ctx, ctx.sampleRate);
   // iOS suspends the context after interruptions or long idle; resuming must happen in a gesture.
-  if (ctx.state !== 'running' && typeof ctx.resume === 'function') void ctx.resume();
+  if (ctx.state !== 'running' && typeof ctx.resume === 'function') {
+    // Old WebKit may not return a promise here.
+    const p = ctx.resume() as Promise<void> | undefined;
+    if (p && typeof p.then === 'function') p.then(notify, () => undefined);
+  }
+  notify();
 }
 
 export function audioStatus(): { supported: boolean; state: string; sampleRate: number } {
@@ -61,13 +93,11 @@ interface Note {
   dur: number;
 }
 
-let enabled = true;
-let volume = 0.7;
-
 export function configureSound(on: boolean, vol: number): void {
   enabled = on;
   volume = vol;
   if (master) master.gain.value = vol;
+  notify();
 }
 
 function playNotes(notes: Note[], wave: OscillatorType, peak: number) {
